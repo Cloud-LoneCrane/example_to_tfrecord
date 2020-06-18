@@ -1,4 +1,5 @@
 import tensorflow as tf
+import random
 
 
 def serialize_sample_image_with_image(image, mask):
@@ -71,3 +72,30 @@ def serialize_to_tfrecord(serialize_sample_list, full_name):
             # 每次写入一个样本
             # 5.将Example写入到tfrecord文件
             writer.write(serialize_sample)
+
+
+def shuffler_array_inputs_labels(inputs, labels):
+    """
+    打乱传入的inputs和labels
+    :param inputs: array_inputs
+    :param labels: array_labels
+    :return: inputs, labels
+    """
+
+
+    return inputs, labels
+
+
+def shuffler_list_inputs_labels(inputs, labels):
+    """
+    打乱传入的inputs和labels
+    :param inputs: list_inputs
+    :param labels: list_labels
+    :return: inputs, labels
+    """
+    state = random.getstate()
+    random.shuffle(inputs)
+    random.setstate(state)
+    random.shuffle(labels)
+
+    return inputs, labels
