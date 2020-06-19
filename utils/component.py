@@ -1,5 +1,6 @@
 import tensorflow as tf
 import random
+import numpy as np
 
 
 def serialize_sample_image_with_image(image, mask):
@@ -59,7 +60,7 @@ def serialize_sample_image_with_value(image, value):
     return example.SerializeToString()
 
 
-def serialize_to_tfrecord(serialize_sample_list, full_name):
+def save_serialize_to_tfrecord(serialize_sample_list, full_name):
     """
     将传入的serialize_sample_list 写入到名为full_name的tfrecord文件中
     :param serialize_sample_list:
@@ -81,7 +82,9 @@ def shuffler_array_inputs_labels(inputs, labels):
     :param labels: array_labels
     :return: inputs, labels
     """
-
+    permutation = np.random.permutation(inputs.shape[0])
+    inputs = inputs[permutation]
+    labels = labels[permutation]
 
     return inputs, labels
 
@@ -99,3 +102,33 @@ def shuffler_list_inputs_labels(inputs, labels):
     random.shuffle(labels)
 
     return inputs, labels
+
+
+def save_data_hist_fig(data, png_name, bins=100):
+    """
+    将传入的data进行直方图统计并将结果保存到png_name指定的名字中
+    :param data:
+    :param png_name:
+    :return:
+    """
+    import matplotlib.pyplot as plt
+    plt.hist(data.ravel(), bins=bins)
+    plt.savefig(png_name)
+    plt.clf()
+    return None
+
+
+if __name__ == '__main__':
+    # a = np.array(range(10))
+    # b = np.array(range(10))
+    #
+    # a, b = shuffler_array_inputs_labels(a, b)
+    # print(a, b)
+    #
+    # c = list(a)
+    # d = list(b)
+    # c, d = shuffler_list_inputs_labels(c, d)
+    # print(c, d)
+
+    data = np.random.random((32, 32))*100
+    save_data_hist_fig(data, "test.png")
