@@ -1,5 +1,5 @@
 from utils import serialize_sample_image_with_image, save_data_hist_fig, shuffler_array_inputs_labels, \
-    save_serialize_to_tfrecord
+    save_serialize_to_tfrecord, save_example_to_tfrecord
 import os
 import SimpleITK as sitk
 import numpy as np
@@ -184,27 +184,12 @@ def get_raw_example():
 
 def main():
     train_images, train_masks, test_images, test_masks = get_raw_example()
-
-    total_file_num = int(np.ceil(train_images.shape[0] / num_examples_one_tfrecord))
-    tfrecord_filename = "train-{}-{}.zip"
-
-    num_file_record = 1
-
-    counter = 1
-    serialized_list = list()
-
-    for index in range(train_images.shape[0]):
-        if counter < num_examples_one_tfrecord:
-            serialized_list.append(serialize_sample_image_with_image(train_images[index], train_masks[index]))
-        else:
-            counter = 1
-            serialized_list.append(serialize_sample_image_with_image(train_images[index], train_masks[index]))
-            save_serialize_to_tfrecord(serialized_list, tfrecord_filename.format(total_file_num, num_file_record))
-            num_file_record += 1
-            serialized_list.clear()
-
-    if serialized_list is not None:
-        save_serialize_to_tfrecord(serialized_list, tfrecord_filename.format(total_file_num, num_file_record))
+    save_example_to_tfrecord(images=train_images, labels=train_masks, save_tfrecord_dir=save_tfrecord_dir,
+                             num_examples_one_tfrecord=num_examples_one_tfrecord,
+                             name_prefix="train")
+    save_example_to_tfrecord(images=test_images, labels=test_masks, save_tfrecord_dir=save_tfrecord_dir,
+                             num_examples_one_tfrecord=num_examples_one_tfrecord,
+                             name_prefix="test")
 
     return None
 

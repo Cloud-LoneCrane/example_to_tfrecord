@@ -1,6 +1,7 @@
 import tensorflow as tf
 import random
 import numpy as np
+import os
 
 
 def serialize_sample_image_with_image(image, mask):
@@ -73,6 +74,50 @@ def save_serialize_to_tfrecord(serialize_sample_list, full_name):
             # 每次写入一个样本
             # 5.将Example写入到tfrecord文件
             writer.write(serialize_sample)
+
+
+def save_example_to_tfrecord(images, labels, save_tfrecord_dir=None,
+                             name_prefix="train", num_examples_one_tfrecord=100):
+    """
+    将传入的images和masks存储成tfrecord文件
+    :param images: example的inputs
+    :param labels: example的labels，images和labels的第一个维度需要相等
+    :param save_tfrecord_dir: 保存tfrecord文件的路径
+    :param name_prefix: 保存的tfrecord文件名的前缀
+    :param num_examples_one_tfrecord: 一个tfrecord文件保存多少个样本
+    :return:
+    """
+    if labels.shape == images.shape:
+        serialize_function = serialize_sample_image_with_image
+    else:
+        serialize_function = serialize_sample_image_with_value
+
+    total_file_num = int(np.ceil(images.shape[0] / num_examples_one_tfrecord))
+    tfrecord_filename = "{}-{}-{}.zip"
+
+    num_file_record = 1
+
+    counter = 1
+    serialized_list = list()
+
+    for index in range(images.shape[0]):
+        if counter < num_examples_one_tfrecord:
+            counter += 1
+            serialized_list.append(serialize_function(images[index], labels[index]))
+        else:
+            counter = 1
+            name = os.path.join(save_tfrecord_dir, tfrecord_filename.format(name_prefix, num_file_record, total_file_num))
+            serialized_list.append(serialize_function(images[index], labels[index]))
+            save_serialize_to_tfrecord(serialized_list, name)
+            num_file_record += 1
+            serialized_list.clear()
+
+    if serialized_list is not None:
+        name = os.path.join(save_tfrecord_dir, tfrecord_filename.format(name_prefix, num_file_record, total_file_num))
+        save_serialize_to_tfrecord(serialized_list, name)
+        serialized_list.clear()
+
+    return None
 
 
 def shuffler_array_inputs_labels(inputs, labels):
