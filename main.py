@@ -182,22 +182,32 @@ def get_raw_example():
     return train_images, train_masks, test_images, test_masks
 
 
-if __name__ == '__main__':
+def main():
     train_images, train_masks, test_images, test_masks = get_raw_example()
 
-    tfrecord_filename = ""
+    total_file_num = int(np.ceil(train_images.shape[0] / num_examples_one_tfrecord))
+    tfrecord_filename = "train-{}-{}.zip"
+
+    num_file_record = 1
+
     counter = 1
     serialized_list = list()
+
     for index in range(train_images.shape[0]):
         if counter < num_examples_one_tfrecord:
             serialized_list.append(serialize_sample_image_with_image(train_images[index], train_masks[index]))
         else:
             counter = 1
-            save_serialize_to_tfrecord(serialized_list)
+            serialized_list.append(serialize_sample_image_with_image(train_images[index], train_masks[index]))
+            save_serialize_to_tfrecord(serialized_list, tfrecord_filename.format(total_file_num, num_file_record))
+            num_file_record += 1
+            serialized_list.clear()
+
+    if serialized_list is not None:
+        save_serialize_to_tfrecord(serialized_list, tfrecord_filename.format(total_file_num, num_file_record))
+
+    return None
 
 
-    for i in range(5):
-        plt.imshow(train_images[i, :, :, 0], cmap="gray")
-        plt.show()
-        plt.imshow(train_masks[i, :, :, 0], cmap="gray")
-        plt.show()
+if __name__ == '__main__':
+    main()
