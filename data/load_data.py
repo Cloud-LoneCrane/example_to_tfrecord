@@ -19,7 +19,7 @@ def _parse_serialized_images_images(serialized_example):
     shape = parsed_features["shape"]
     img = tf.cast(tf.reshape(tf.decode_raw(parsed_features["image"], tf.float64), shape=shape), dtype=tf.float32)
     musk = tf.cast(tf.reshape(tf.decode_raw(parsed_features["mask"], tf.float64), shape=shape), dtype=tf.float32)
-    size = shape
+    size = [512, 512, 1]
     return tf.image.resize_images(img, size=size), tf.image.resize_images(musk, size=size)
 
 
@@ -41,7 +41,7 @@ def _parse_serialized_images_values(serialized_example):
     img = tf.cast(tf.reshape(tf.decode_raw(parsed_features["image"], tf.float32), shape=shape), dtype=tf.float32)
     label = parsed_features["label"]
 
-    size = shape
+    size = [512, 512, 1]
     return tf.image.resize_images(img, size=size), label
 
 
