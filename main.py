@@ -1,8 +1,10 @@
 from utils import serialize_sample_image_with_image, save_data_hist_fig, shuffler_array_inputs_labels, \
     save_serialize_to_tfrecord, save_example_to_tfrecord
+from data import tfrecord_filenames_to_dataset
 import os
 import SimpleITK as sitk
 import numpy as np
+import tensorflow as tf
 from matplotlib import pylab as plt
 
 image_dir = r"D:\data\COVID19\merged\image"
@@ -182,7 +184,7 @@ def get_raw_example():
     return train_images, train_masks, test_images, test_masks
 
 
-def main():
+def save():
     train_images, train_masks, test_images, test_masks = get_raw_example()
     save_example_to_tfrecord(images=train_images, labels=train_masks, save_tfrecord_dir=save_tfrecord_dir,
                              num_examples_one_tfrecord=num_examples_one_tfrecord,
@@ -194,5 +196,18 @@ def main():
     return None
 
 
+def read():
+    filenames = os.listdir(save_tfrecord_dir)
+    test_names = [os.path.join(save_tfrecord_dir, name) for name in filenames if name.startswith("test")]
+    dataset = tfrecord_filenames_to_dataset(test_names, BATCH_SIZE=1)
+    image, mask = dataset.make_one_shot_iterator().get_next()
+
+    with tf.Session() as sess:
+        for i in range(5):
+            img, label = sess.run([image, mask])
+            print(img.shape, label.shape)
+    return None
+
+
 if __name__ == '__main__':
-    main()
+    read()
